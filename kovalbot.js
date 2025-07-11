@@ -195,7 +195,7 @@ function toggleChatbot() {
         // Add welcome message if empty
         const messages = document.getElementById('chatbot-messages');
         if (messages.innerHTML.trim() === '') {
-            messages.innerHTML = '<div><b>KovalBot:</b> ¡Hola! Soy KovalBot. Puedo ayudarte con el calendario, ideas de planes, menú semanal, mini-retos familiares y organización. ¿En qué puedo ayudarte?</div>';
+            messages.innerHTML = '<div><b>KovalBot:</b> ¡Hola! Papá, Mamá, Samuel y Adaline, soy KovalBot. Puedo ayudarles con lo que necesiten. ¿En qué puedo ayudarles?</div>';
         }
     } else {
         chatbotBody.style.display = 'none';
