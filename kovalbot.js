@@ -3,18 +3,26 @@
 // Function to get calendar context for the chatbot
 function getCalendarContext() {
     try {
-        // Get current data from localStorage/memory
-        const events = JSON.parse(localStorage.getItem('familyEvents') || '[]');
-        const plans = JSON.parse(localStorage.getItem('familyPlans') || '[]');
-        const menu = JSON.parse(localStorage.getItem('weeklyMenu') || '{}');
-        const challenges = JSON.parse(localStorage.getItem('familyChallenges') || '[]');
-        const inventory = JSON.parse(localStorage.getItem('homeInventory') || '[]');
+        // Get current data from global variables (in memory) first, fallback to localStorage
+        const eventsData = (typeof events !== 'undefined' && events.length > 0) ? events : JSON.parse(localStorage.getItem('familyEvents') || '[]');
+        const plansData = (typeof plans !== 'undefined' && plans.length > 0) ? plans : JSON.parse(localStorage.getItem('familyPlans') || '[]');
+        const menuData = (typeof weeklyMenu !== 'undefined' && Object.keys(weeklyMenu).length > 0) ? weeklyMenu : JSON.parse(localStorage.getItem('weeklyMenu') || '{}');
+        const challengesData = (typeof challenges !== 'undefined' && challenges.length > 0) ? challenges : JSON.parse(localStorage.getItem('familyChallenges') || '[]');
+        const inventoryData = (typeof inventory !== 'undefined' && inventory.length > 0) ? inventory : JSON.parse(localStorage.getItem('homeInventory') || '[]');
         
-        let context = "Contexto actual de la familia:\n\n";
+        // Add current date info
+        const today = new Date();
+        const todayString = today.toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        let context = `FECHA ACTUAL: Hoy es ${todayString}\n\n`;
         
         // Add upcoming events
-        const today = new Date();
-        const upcomingEvents = events.filter(event => new Date(event.date) >= today)
+        const upcomingEvents = eventsData.filter(event => new Date(event.date) >= today)
                                    .sort((a, b) => new Date(a.date) - new Date(b.date))
                                    .slice(0, 5);
         
@@ -28,16 +36,16 @@ function getCalendarContext() {
         }
         
         // Add current plans
-        if (plans.length > 0) {
+        if (plansData.length > 0) {
             context += "PLANES FAMILIARES:\n";
-            plans.slice(0, 3).forEach(plan => {
+            plansData.slice(0, 3).forEach(plan => {
                 context += `- ${plan.title} (Prioridad: ${plan.priority}) - ${plan.description}\n`;
             });
             context += "\n";
         }
         
         // Add current challenges
-        const activeChallenges = challenges.filter(c => c.status !== 'completed').slice(0, 3);
+        const activeChallenges = challengesData.filter(c => c.status !== 'completed').slice(0, 3);
         if (activeChallenges.length > 0) {
             context += "MINI-RETOS ACTIVOS:\n";
             activeChallenges.forEach(challenge => {
@@ -47,11 +55,20 @@ function getCalendarContext() {
         }
         
         // Add weekly menu highlights
-        const menuItems = Object.values(menu).filter(item => item && item.dish);
+        const menuItems = Object.values(menuData).filter(item => item && item.dish);
         if (menuItems.length > 0) {
             context += "MENÚ SEMANAL:\n";
             menuItems.slice(0, 3).forEach(item => {
                 context += `- ${item.dish} (${item.cookTime} min)\n`;
+            });
+            context += "\n";
+        }
+        
+        // Add inventory items
+        if (inventoryData.length > 0) {
+            context += "INVENTARIO ACTUAL:\n";
+            inventoryData.forEach(item => {
+                context += `- ${item.name}: ${item.quantity} unidades (Categoría: ${item.category})\n`;
             });
             context += "\n";
         }
@@ -80,26 +97,22 @@ async function sendChatbotMessage() {
     try {
         // Include calendar context with the message
         const calendarContext = getCalendarContext();
-        const messageWithContext = `Eres KovalBot, que ayuda con el calendario y la organización familiar.
+        const messageWithContext = `Eres KovalBot, asistente del calendario familiar.
 
 ${calendarContext}
 
 Instrucciones para respuestas:
-- Responde de manera natural y conversacional en el mismo idioma que el usuario
-- Sé conciso y directo
-- Puedes ayudar con:
-  * Consultar eventos próximos
-  * Sugerir horarios para actividades
-  * Recordar planes familiares
-  * Dar consejos sobre menú semanal y cocina
-  * Motivar con los mini-retos familiares
-  * Responder preguntas sobre el calendario
-  * Dar consejos de organización familiar
-- Si el usuario pregunta por eventos específicos, menciona fecha, hora y miembro responsable
-- Si pregunta por planes, incluye la prioridad y descripción
-- Si pregunta sobre el menú, menciona los platos y tiempos de cocción
-- Si pregunta sobre retos, motiva y da consejos para completarlos
-- Mantén un tono amigable y útil
+- SIEMPRE usa la información exacta del contexto proporcionado arriba, especialmente la FECHA ACTUAL
+- Si preguntan sobre inventario, consulta la sección "INVENTARIO ACTUAL" y da la cantidad exacta
+- Si preguntan sobre eventos, consulta "PRÓXIMOS EVENTOS" y menciona fecha, hora y responsable
+- Si preguntan sobre planes, consulta "PLANES FAMILIARES" con prioridad y descripción
+- Si preguntan qué día es hoy, usa la fecha de la sección "FECHA ACTUAL"
+- Si preguntan sobre cantidad de algo específico en inventario, busca el item exacto y di la cantidad
+- Si no encuentras algo en el contexto, di claramente "No veo esa información en los datos actuales"
+- Sé específico y usa los datos exactos del contexto
+- Responde en español de manera amigable y útil
+- Si preguntan sobre el menú, consulta "MENÚ SEMANAL"
+- Si preguntan sobre retos, consulta "MINI-RETOS ACTIVOS"
 
 Pregunta del usuario: ${userMessage}`;
         
@@ -195,7 +208,7 @@ function toggleChatbot() {
         // Add welcome message if empty
         const messages = document.getElementById('chatbot-messages');
         if (messages.innerHTML.trim() === '') {
-            messages.innerHTML = '<div><b>KovalBot:</b> ¡Hola! Papá, Mamá, Samuel y Adaline, soy KovalBot. Puedo ayudarles con lo que necesiten. ¿En qué puedo ayudarles?</div>';
+            messages.innerHTML = '<div><b>KovalBot:</b> ¡Hola! Papá, Mamá, Samuel y Adaline, soy KovalBot. Puedo ayudarles con lo que necesiten. ¿En qué puedo ayudarte?</div>';
         }
     } else {
         chatbotBody.style.display = 'none';
