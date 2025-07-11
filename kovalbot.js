@@ -187,12 +187,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') sendChatbotMessage();
     });
     
-    // Ensure chatbot starts collapsed on all devices
+    // Check if chatbot was previously open (preserve state between pages)
     const chatbotBody = document.getElementById('chatbot-body');
     const chatbotHeader = document.getElementById('chatbot-header');
+    
     if (chatbotBody && chatbotHeader) {
-        chatbotBody.style.display = 'none';
-        chatbotHeader.style.borderRadius = '10px';
+        // Get previous state from localStorage
+        const wasOpen = localStorage.getItem('kovalbot-open') === 'true';
+        
+        if (wasOpen) {
+            // Keep chatbot open
+            chatbotBody.style.display = 'block';
+            chatbotHeader.style.borderRadius = '10px 10px 0 0';
+            chatbotBody.style.borderRadius = '0 0 10px 10px';
+        } else {
+            // Keep chatbot closed
+            chatbotBody.style.display = 'none';
+            chatbotHeader.style.borderRadius = '10px';
+        }
     }
 });
 
@@ -205,6 +217,9 @@ function toggleChatbot() {
         chatbotHeader.style.borderRadius = '10px 10px 0 0';
         chatbotBody.style.borderRadius = '0 0 10px 10px';
         
+        // Save open state
+        localStorage.setItem('kovalbot-open', 'true');
+        
         // Add welcome message if empty
         const messages = document.getElementById('chatbot-messages');
         if (messages.innerHTML.trim() === '') {
@@ -213,5 +228,8 @@ function toggleChatbot() {
     } else {
         chatbotBody.style.display = 'none';
         chatbotHeader.style.borderRadius = '10px';
+        
+        // Save closed state
+        localStorage.setItem('kovalbot-open', 'false');
     }
 }
