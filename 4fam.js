@@ -650,7 +650,7 @@ function renderEvents() {
     console.log('Upcoming events:', upcomingEvents.length);
     
     if (upcomingEvents.length === 0) {
-        eventsList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay eventos próximos</p>';
+        eventsList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay eventos</p>';
         return;
     }
     
@@ -756,10 +756,12 @@ function handlePlanSubmit(e) {
 
 function renderPlans() {
     const plansList = document.getElementById('plansList');
+    if (!plansList) return; // Exit if not on ideas page
+    
     plansList.innerHTML = '';
     
     if (plans.length === 0) {
-        plansList.innerHTML = '<p style="text-align: center; color: #666;">No hay ideas de planes aún</p>';
+        plansList.innerHTML = '<p style="text-align: center; color: #666;">No hay ideas</p>';
         return;
     }
     
@@ -1087,6 +1089,8 @@ function generateShoppingList() {
 
 function renderShoppingList() {
     const shoppingListDiv = document.getElementById('shoppingList');
+    if (!shoppingListDiv) return; // Exit if not on menu page
+    
     shoppingListDiv.innerHTML = '';
     
     if (shoppingList.length === 0) {
@@ -1142,10 +1146,12 @@ function saveListAsFavorite() {
 
 function renderFavoriteLists() {
     const container = document.getElementById('favoriteLists');
+    if (!container) return; // Exit if not on menu page
+    
     container.innerHTML = '';
     
     if (favoriteLists.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 10px;">No hay listas favoritas guardadas</p>';
+        container.innerHTML = '<p style="text-align: center; color: #666; padding: 10px;">No hay favoritos</p>';
         return;
     }
     
@@ -1653,12 +1659,14 @@ function addAchievement(challenge) {
 
 function renderAchievements() {
     const container = document.getElementById('achievements');
+    if (!container) return; // Exit if not on challenges page
+    
     const achievements = JSON.parse(localStorage.getItem('familyAchievements') || '[]');
     
     if (achievements.length === 0) {
         container.innerHTML = `
             <p style="text-align: center; color: #666; padding: 20px;">
-                Aún no hay logros. ¡Completen retos para ganar premios! 🏆
+                ¡Completen retos para ganar premios! 🏆
             </p>
         `;
         return;

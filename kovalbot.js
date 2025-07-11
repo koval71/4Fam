@@ -1,4 +1,68 @@
 // KovalBot para Calendario Familiar
+
+// Function to get calendar context for the chatbot
+function getCalendarContext() {
+    try {
+        // Get current data from localStorage/memory
+        const events = JSON.parse(localStorage.getItem('familyEvents') || '[]');
+        const plans = JSON.parse(localStorage.getItem('familyPlans') || '[]');
+        const menu = JSON.parse(localStorage.getItem('weeklyMenu') || '{}');
+        const challenges = JSON.parse(localStorage.getItem('familyChallenges') || '[]');
+        const inventory = JSON.parse(localStorage.getItem('homeInventory') || '[]');
+        
+        let context = "Contexto actual de la familia:\n\n";
+        
+        // Add upcoming events
+        const today = new Date();
+        const upcomingEvents = events.filter(event => new Date(event.date) >= today)
+                                   .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                   .slice(0, 5);
+        
+        if (upcomingEvents.length > 0) {
+            context += "PRÓXIMOS EVENTOS:\n";
+            upcomingEvents.forEach(event => {
+                const date = new Date(event.date).toLocaleDateString('es-ES');
+                context += `- ${event.title} (${event.member}) - ${date} a las ${event.time}\n`;
+            });
+            context += "\n";
+        }
+        
+        // Add current plans
+        if (plans.length > 0) {
+            context += "PLANES FAMILIARES:\n";
+            plans.slice(0, 3).forEach(plan => {
+                context += `- ${plan.title} (Prioridad: ${plan.priority}) - ${plan.description}\n`;
+            });
+            context += "\n";
+        }
+        
+        // Add current challenges
+        const activeChallenges = challenges.filter(c => c.status !== 'completed').slice(0, 3);
+        if (activeChallenges.length > 0) {
+            context += "MINI-RETOS ACTIVOS:\n";
+            activeChallenges.forEach(challenge => {
+                context += `- ${challenge.title} (${challenge.assignedTo}) - ${challenge.description}\n`;
+            });
+            context += "\n";
+        }
+        
+        // Add weekly menu highlights
+        const menuItems = Object.values(menu).filter(item => item && item.dish);
+        if (menuItems.length > 0) {
+            context += "MENÚ SEMANAL:\n";
+            menuItems.slice(0, 3).forEach(item => {
+                context += `- ${item.dish} (${item.cookTime} min)\n`;
+            });
+            context += "\n";
+        }
+        
+        return context || "No hay información específica del calendario disponible en este momento.";
+    } catch (error) {
+        console.error('Error getting calendar context:', error);
+        return "Error al acceder a la información del calendario.";
+    }
+}
+
 async function sendChatbotMessage() {
     const input = document.getElementById('chatbot-input');
     const messages = document.getElementById('chatbot-messages');
@@ -39,6 +103,9 @@ Instrucciones para respuestas:
 
 Pregunta del usuario: ${userMessage}`;
         
+        console.log('Enviando request a:', 'https://kovalbot-backend.onrender.com/chat');
+        console.log('Con mensaje:', messageWithContext.substring(0, 200) + '...');
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for Render cold start
         
@@ -54,6 +121,9 @@ Pregunta del usuario: ${userMessage}`;
         
         clearTimeout(timeoutId);
         
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+        
         // Remove loading indicator
         const loadingMsg = document.getElementById('loading-message');
         if (loadingMsg) loadingMsg.remove();
@@ -63,6 +133,7 @@ Pregunta del usuario: ${userMessage}`;
         }
         
         const data = await res.json();
+        console.log('Response data:', data);
         
         // Handle different response formats
         const botResponse = data.reply || data.response || data.message || data.answer || 
