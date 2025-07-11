@@ -1745,6 +1745,7 @@ function showNotification(message, type = 'info') {
     // Add to document
     document.body.appendChild(notification);
     
+    
     // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
@@ -1957,6 +1958,29 @@ async function deleteChallenge(challengeId, isCustom = false) {
         
         const actionText = isCustom ? 'eliminado permanentemente' : 'ocultado';
         showNotification(`Reto "${challenge.title}" ${actionText}`, 'success');
+    }
+}
+
+async function restoreDefaultChallenges() {
+    if (deletedChallenges.length === 0) {
+        showNotification('No hay retos predefinidos para restaurar', 'info');
+        return;
+    }
+    
+    const confirmMessage = `¿Restaurar ${deletedChallenges.length} reto(s) predefinido(s) eliminado(s)?`;
+    
+    if (confirm(confirmMessage)) {
+        // Clear deleted challenges list to restore all
+        const restoredCount = deletedChallenges.length;
+        deletedChallenges = [];
+        
+        // Save changes
+        await JSONBinAPI.saveAllData();
+        
+        // Refresh the UI
+        renderChallengesList();
+        
+        showNotification(`✅ ${restoredCount} reto(s) predefinido(s) restaurado(s)`, 'success');
     }
 }
 
