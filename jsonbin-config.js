@@ -71,6 +71,9 @@ class JSONBinAPI {
             const result = await response.json();
             console.log('✅ Datos guardados en JSONBin:', result);
             
+            // Update local timestamp
+            localStorage.setItem('lastUpdated', data.lastUpdated);
+            
             // Also save to localStorage as backup
             Object.keys(data).forEach(key => {
                 if (key !== 'lastUpdated') {
@@ -93,38 +96,52 @@ class JSONBinAPI {
         }
     }
 
-    static async syncData() {
+    static async syncData(forceUpdate = false) {
         try {
             const cloudData = await this.loadData();
             
-            // Update global variables with cloud data
-            events = cloudData.familyEvents || [];
-            plans = cloudData.familyPlans || [];
-            weeklyMenu = cloudData.weeklyMenu || [];
-            shoppingList = cloudData.shoppingList || [];
-            favoriteLists = cloudData.favoriteLists || [];
-            inventory = cloudData.homeInventory || [];
-            challenges = cloudData.familyChallenges || [];
-            currentChallenge = cloudData.currentChallenge || null;
-            completedChallenges = cloudData.completedChallenges || [];
-            familyScore = cloudData.familyScore || 0;
-            customChallenges = cloudData.customChallenges || [];
-            modifiedChallenges = cloudData.modifiedChallenges || [];
-            deletedChallenges = cloudData.deletedChallenges || [];
+            // Get local timestamp
+            const localTimestamp = localStorage.getItem('lastUpdated');
+            const cloudTimestamp = cloudData.lastUpdated;
             
-            console.log('🔄 Datos sincronizados desde la nube');
-            
-            // Refresh UI if elements exist
-            if (typeof renderCalendar === 'function') renderCalendar();
-            if (typeof renderEvents === 'function') renderEvents();
-            if (typeof renderPlans === 'function') renderPlans();
-            if (typeof renderWeeklyMenu === 'function') renderWeeklyMenu();
-            if (typeof renderShoppingList === 'function') renderShoppingList();
-            if (typeof renderFavoriteLists === 'function') renderFavoriteLists();
-            if (typeof renderInventory === 'function') renderInventory();
-            if (typeof renderCurrentChallenge === 'function') renderCurrentChallenge();
-            if (typeof renderChallengesList === 'function') renderChallengesList();
-            if (typeof renderFamilyScore === 'function') renderFamilyScore();
+            // Only update if cloud data is newer or force update
+            if (forceUpdate || !localTimestamp || new Date(cloudTimestamp) > new Date(localTimestamp)) {
+                console.log('🔄 Actualizando con datos más recientes de la nube');
+                
+                // Update global variables with cloud data
+                events = cloudData.familyEvents || [];
+                plans = cloudData.familyPlans || [];
+                weeklyMenu = cloudData.weeklyMenu || [];
+                shoppingList = cloudData.shoppingList || [];
+                favoriteLists = cloudData.favoriteLists || [];
+                inventory = cloudData.homeInventory || [];
+                challenges = cloudData.familyChallenges || [];
+                currentChallenge = cloudData.currentChallenge || null;
+                completedChallenges = cloudData.completedChallenges || [];
+                familyScore = cloudData.familyScore || 0;
+                customChallenges = cloudData.customChallenges || [];
+                modifiedChallenges = cloudData.modifiedChallenges || [];
+                deletedChallenges = cloudData.deletedChallenges || [];
+                
+                // Update local timestamp
+                localStorage.setItem('lastUpdated', cloudTimestamp);
+                
+                console.log('🔄 Datos sincronizados desde la nube');
+                
+                // Refresh UI if elements exist
+                if (typeof renderCalendar === 'function') renderCalendar();
+                if (typeof renderEvents === 'function') renderEvents();
+                if (typeof renderPlans === 'function') renderPlans();
+                if (typeof renderWeeklyMenu === 'function') renderWeeklyMenu();
+                if (typeof renderShoppingList === 'function') renderShoppingList();
+                if (typeof renderFavoriteLists === 'function') renderFavoriteLists();
+                if (typeof renderInventory === 'function') renderInventory();
+                if (typeof renderCurrentChallenge === 'function') renderCurrentChallenge();
+                if (typeof renderChallengesList === 'function') renderChallengesList();
+                if (typeof renderFamilyScore === 'function') renderFamilyScore();
+            } else {
+                console.log('⏸️ Datos locales son más recientes, no actualizando');
+            }
             
         } catch (error) {
             console.error('❌ Error sincronizando datos:', error);
@@ -158,11 +175,11 @@ class JSONBinAPI {
     }
 }
 
-// Auto-sync every 30 seconds to check for updates from other devices
+// Auto-sync every 60 seconds to check for updates from other devices (reduced frequency)
 setInterval(async () => {
     try {
-        await JSONBinAPI.syncData();
+        await JSONBinAPI.syncData(); // Will only update if cloud data is newer
     } catch (error) {
         console.log('Sync silently failed, continuing...');
     }
-}, 30000);
+}, 60000); // Changed from 30000 to 60000 (1 minute instead of 30 seconds)

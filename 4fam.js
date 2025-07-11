@@ -240,7 +240,7 @@ async function initializeApp() {
     try {
         // Load data from JSONBin
         console.log('🔄 Inicializando aplicación con datos de JSONBin...');
-        await JSONBinAPI.syncData();
+        await JSONBinAPI.syncData(true); // Force sync on initialization
         
         // Show connection status
         // showNotification('📡 Conectado a la nube familiar', 'success');
