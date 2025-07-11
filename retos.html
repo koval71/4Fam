@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini-retos Familiares - Calendario Familiar</title>
+  <link rel="stylesheet" href="4fam.css">
+</head>
+<body>
+  <div class="container">
+    <header class="main-header">
+      <h1>🏆 Retos</h1>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">📅 Calendario</a>
+        <a href="ideas.html" class="nav-link">💡 Ideas</a>
+        <a href="menu.html" class="nav-link">🍽️ Menú</a>
+        <a href="retos.html" class="nav-link active">🏆 Retos</a>
+        <a href="inventario.html" class="nav-link">📦 Inventario</a>
+      </nav>
+    </header>
+    
+    <audio controls style="width:100%;margin-bottom:10px;">
+      <source src="weddingaudio.mp3" type="audio/mpeg">
+      Your browser does not support the audio.
+    </audio>
+    <hr class="fancy-line">
+
+    <!-- Mini Challenges Section -->
+    <div class="challenges-section">
+      <div class="challenges-header">
+        <div class="header-left">
+          <h4>Mini-retos Familiares</h4>
+        </div>
+        <div class="header-right">
+          <div class="family-score">
+            <span id="familyScore">🏆 Puntuación Familiar: 0</span>
+            <button onclick="resetFamilyScore()" class="btn-reset" title="Reiniciar puntuación">🔄</button>
+          </div>
+          <button onclick="restoreDefaultChallenges()" class="btn-restore" title="Restaurar retos predefinidos">🏠</button>
+        </div>
+      </div>
+
+      <!-- Current Week Challenge -->
+      <div class="current-challenge">
+        <h5>🎯 Reto de Esta Semana</h5>
+        <div id="currentChallenge" class="challenge-card current">
+          <!-- Current challenge will be displayed here -->
+        </div>
+        <button onclick="generateNewChallenge()" class="btn-primary">🎲 Nuevo Reto</button>
+      </div>
+
+      <!-- Create Custom Challenge -->
+      <div class="create-challenge">
+        <h5>➕ Crear Reto Personalizado</h5>
+        <form id="customChallengeForm" autocomplete="off">
+          <div class="form-row">
+            <input type="text" id="customTitle" placeholder="Título del reto" required>
+            <select id="customCategory" required>
+              <option value="">Categoría</option>
+              <option value="no-screen">📵 Sin Pantallas</option>
+              <option value="creative">🎨 Creativos</option>
+              <option value="active">🏃 Activos</option>
+              <option value="cooking">👨‍🍳 Cocina</option>
+            </select>
+          </div>
+          <textarea id="customDescription" placeholder="Describe el reto..." rows="3" required></textarea>
+          <div class="form-row">
+            <input type="text" id="customDuration" placeholder="Duración (ej: 30 min)" required>
+            <select id="customDifficulty" required>
+              <option value="">Dificultad</option>
+              <option value="Fácil">😊 Fácil</option>
+              <option value="Medio">😐 Medio</option>
+              <option value="Difícil">😤 Difícil</option>
+            </select>
+            <input type="number" id="customPoints" placeholder="Puntos" min="5" max="50" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit">➕ Crear Reto</button>
+            <button type="button" onclick="cancelEdit()" class="btn-cancel" style="display:none;">❌ Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Challenge Categories -->
+      <div class="challenge-categories">
+        <h5>Categorías de Retos</h5>
+        <div class="category-buttons">
+          <button onclick="filterChallenges('all')" class="category-btn active">Todos</button>
+          <button onclick="filterChallenges('no-screen')" class="category-btn">📵 Sin Pantallas</button>
+          <button onclick="filterChallenges('creative')" class="category-btn">🎨 Creativos</button>
+          <button onclick="filterChallenges('active')" class="category-btn">🏃 Activos</button>
+          <button onclick="filterChallenges('cooking')" class="category-btn">👨‍🍳 Cocina</button>
+        </div>
+      </div>
+
+      <!-- Available Challenges -->
+      <div class="available-challenges">
+        <h5>Retos Disponibles</h5>
+        <div id="challengesList" class="challenges-list"></div>
+      </div>
+
+      <!-- Completed Challenges & Rewards -->
+      <div class="achievements-section">
+        <h5>🏅 Logros Familiares</h5>
+        <div id="achievements" class="achievements-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2025 Mario Delgado. All rights reserved.</p>
+  </footer>
+
+  <!-- KovalBot Chatbot UI -->
+  <div id="chatbot-container" style="position:fixed;bottom:20px;right:20px;width:320px;max-width:90vw;background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,0.15);padding:0;z-index:9999;">
+    <div id="chatbot-header" onclick="toggleChatbot()" style="background:#b76e79;color:#fff;padding:10px 0;text-align:center;font-weight:bold;font-size:18px;letter-spacing:1px;cursor:pointer;border-radius:10px;user-select:none;">
+      KovalBot
+    </div>
+    <div id="chatbot-body" style="display:none;padding:16px;padding-top:0;">
+      <div id="chatbot-messages" style="height:200px;overflow-y:auto;margin-bottom:10px;font-family:sans-serif;font-size:15px;margin-top:10px;"></div>
+      <input id="chatbot-input" type="text" placeholder="Pregunta sobre los retos..." style="width:75%;padding:6px;border-radius:5px;border:1px solid #ccc;">
+      <button onclick="sendChatbotMessage()" style="padding:6px 12px;border-radius:5px;background:#b76e79;color:#fff;border:none;">Send</button>
+    </div>
+  </div>
+
+  <script src="jsonbin-config.js"></script>
+  <script src="4fam.js"></script>
+  <script src="kovalbot.js"></script>
+  <script>
+    // Initialize only challenges functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Página de retos cargada');
+      
+      setupChallengesEventListeners();
+      renderFamilyScore();
+      
+      // Initialize challenges
+      setTimeout(() => {
+        initializeChallenges();
+      }, 100);
+      
+      requestNotificationPermission();
+    });
+
+    function setupChallengesEventListeners() {
+      const form = document.getElementById('customChallengeForm');
+      if (form) {
+        form.addEventListener('submit', handleCustomChallengeSubmit);
+      }
+    }
+  </script>
+</body>
+</html>
