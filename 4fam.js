@@ -1016,7 +1016,7 @@ function renderWeeklyMenu() {
         menuGrid.innerHTML = '';
         
         if (weeklyMenu.length === 0) {
-            menuGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay menú generado. ¡Presiona "Sugerir Menú" para comenzar!</p>';
+            menuGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay menú generado.</p>';
             return;
         }
         
