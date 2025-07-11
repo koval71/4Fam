@@ -72,10 +72,11 @@
   <script src="4fam.js"></script>
   <script src="kovalbot.js"></script>
   <script>
-    // Initialize only plans functionality
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with full data sync
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load data from JSONBin first
+      await initializeApp();
       setupPlansEventListeners();
-      renderPlans();
       requestNotificationPermission();
     });
 

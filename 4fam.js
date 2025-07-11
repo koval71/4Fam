@@ -242,8 +242,8 @@ async function initializeApp() {
         console.log('🔄 Inicializando aplicación con datos de JSONBin...');
         await JSONBinAPI.syncData(true); // Force sync on initialization
         
-        // Show connection status
-        // showNotification('📡 Conectado a la nube familiar', 'success');
+        // Silent sync - no notification needed
+        console.log('✅ Datos sincronizados exitosamente');
     } catch (error) {
         console.error('⚠️ Error cargando datos de JSONBin, usando datos locales:', error);
         showNotification('⚠️ Modo offline - usando datos locales', 'warning');
@@ -2179,3 +2179,39 @@ document.addEventListener('click', function(e) {
         searchResults.style.display = 'none';
     }
 });
+
+// Backup and Restore Functions for Data Safety
+// Auto-backup every day (silent emergency backup only)
+function createAutoBackup() {
+    const lastBackup = localStorage.getItem('lastAutoBackup');
+    const today = new Date().toDateString();
+    
+    if (lastBackup !== today) {
+        // Create backup in localStorage as emergency fallback
+        const emergencyBackup = {
+            familyEvents: events,
+            familyPlans: plans,
+            weeklyMenu: weeklyMenu,
+            shoppingList: shoppingList,
+            favoriteLists: favoriteLists,
+            homeInventory: inventory,
+            familyChallenges: challenges,
+            currentChallenge: currentChallenge,
+            completedChallenges: completedChallenges,
+            familyScore: familyScore,
+            customChallenges: customChallenges,
+            modifiedChallenges: modifiedChallenges,
+            deletedChallenges: deletedChallenges,
+            backupDate: new Date().toISOString()
+        };
+        
+        localStorage.setItem('emergencyBackup', JSON.stringify(emergencyBackup));
+        localStorage.setItem('lastAutoBackup', today);
+        
+        console.log('📦 Silent auto-backup created');
+    }
+}
+
+// Initialize silent auto-backup
+setInterval(createAutoBackup, 60000 * 60); // Check every hour
+createAutoBackup(); // Run once on startup

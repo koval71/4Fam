@@ -127,18 +127,13 @@
   <script src="4fam.js"></script>
   <script src="kovalbot.js"></script>
   <script>
-    // Initialize only challenges functionality
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with full data sync
+    document.addEventListener('DOMContentLoaded', async function() {
       console.log('Página de retos cargada');
       
+      // Load data from JSONBin first
+      await initializeApp();
       setupChallengesEventListeners();
-      renderFamilyScore();
-      
-      // Initialize challenges
-      setTimeout(() => {
-        initializeChallenges();
-      }, 100);
-      
       requestNotificationPermission();
     });
 

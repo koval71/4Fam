@@ -111,13 +111,11 @@
   <script src="4fam.js"></script>
   <script src="kovalbot.js"></script>
   <script>
-    // Initialize only calendar functionality
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with full data sync
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load data from JSONBin first
+      await initializeApp();
       setupCalendarEventListeners();
-      renderCalendar();
-      renderEvents();
-      updateCurrentMonthDisplay();
-      setDefaultDateTime();
       requestNotificationPermission();
       checkUpcomingEvents();
       setInterval(checkUpcomingEvents, 60000); // Check every minute

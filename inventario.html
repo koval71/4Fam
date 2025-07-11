@@ -76,10 +76,11 @@
   <script src="4fam.js"></script>
   <script src="kovalbot.js"></script>
   <script>
-    // Initialize only inventory functionality
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with full data sync
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load data from JSONBin first
+      await initializeApp();
       setupInventoryEventListeners();
-      renderInventory();
       requestNotificationPermission();
     });
 
