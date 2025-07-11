@@ -18,6 +18,8 @@ body {
   box-shadow: 0 4px 24px rgba(183,110,121,0.18);
   padding: 32px 24px 24px 24px;
   text-align: center;
+  width: calc(100% - 40px); /* Ensures container fits within viewport */
+  box-sizing: border-box;
 }
 
 /* Header styles */
@@ -1121,7 +1123,9 @@ textarea {
 @media (max-width: 768px) {
   .container {
     margin: 10px;
-    padding: 20px 15px;
+    padding: 20px 12px;
+    width: calc(100% - 20px);
+    border-radius: 12px;
   }
   
   .form-row {
@@ -1129,12 +1133,23 @@ textarea {
   }
   
   .calendar-grid {
-    font-size: 12px;
+    font-size: 11px;
+    gap: 1px;
+    padding: 5px;
   }
   
   .calendar-day {
-    min-height: 50px;
-    padding: 3px;
+    min-height: 45px;
+    padding: 2px;
+  }
+  
+  .day-number {
+    font-size: 0.9em;
+  }
+  
+  .event-dot {
+    width: 4px;
+    height: 4px;
   }
   
   .tabs-container {
@@ -1176,6 +1191,105 @@ textarea {
   .nav-link {
     padding: 8px 12px;
     font-size: 12px;
+  }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 480px) {
+  .container {
+    margin: 5px;
+    padding: 15px 8px;
+    width: calc(100% - 10px);
+    border-radius: 10px;
+  }
+  
+  h1 {
+    font-size: 1.8em;
+  }
+  
+  .main-nav {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .nav-link {
+    font-size: 0.85em;
+    padding: 8px 10px;
+  }
+  
+  .calendar-grid {
+    font-size: 10px;
+    gap: 1px;
+    padding: 3px;
+  }
+  
+  .calendar-day {
+    min-height: 40px;
+    padding: 1px;
+  }
+  
+  .day-number {
+    font-size: 0.8em;
+    margin-bottom: 1px;
+  }
+  
+  .day-events {
+    gap: 1px;
+  }
+  
+  .event-dot {
+    width: 3px;
+    height: 3px;
+  }
+  
+  .calendar-day-header {
+    padding: 5px 2px;
+    font-size: 0.8em;
+  }
+  
+  .calendar-nav h3 {
+    font-size: 1.1em;
+  }
+  
+  .calendar-nav button {
+    padding: 8px 12px;
+  }
+  
+  .form-container input,
+  .form-container select,
+  .form-container textarea,
+  .form-container button {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .time-selector {
+    gap: 5px;
+  }
+  
+  .time-selector select {
+    min-width: 50px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .container {
+    margin: 2px;
+    padding: 10px 5px;
+    width: calc(100% - 4px);
+  }
+  
+  .calendar-grid {
+    font-size: 9px;
+  }
+  
+  .calendar-day {
+    min-height: 35px;
+  }
+  
+  .nav-link {
+    font-size: 0.75em;
+    padding: 6px 8px;
   }
 }
 
