@@ -243,7 +243,7 @@ async function initializeApp() {
         await JSONBinAPI.syncData();
         
         // Show connection status
-        showNotification('📡 Conectado a la nube familiar', 'success');
+        // showNotification('📡 Conectado a la nube familiar', 'success');
     } catch (error) {
         console.error('⚠️ Error cargando datos de JSONBin, usando datos locales:', error);
         showNotification('⚠️ Modo offline - usando datos locales', 'warning');
@@ -1016,7 +1016,7 @@ function renderWeeklyMenu() {
         menuGrid.innerHTML = '';
         
         if (weeklyMenu.length === 0) {
-            menuGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay menú generado.</p>';
+            menuGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay menú generado. ¡Presiona "Sugerir Menú" para comenzar!</p>';
             return;
         }
         

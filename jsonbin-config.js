@@ -150,7 +150,7 @@ class JSONBinAPI {
             };
             
             await this.saveData(data);
-            showNotification('📡 Datos sincronizados con la nube', 'success');
+            // showNotification('📡 Datos sincronizados con la nube', 'success');
         } catch (error) {
             console.error('❌ Error guardando todos los datos:', error);
             showNotification('⚠️ Error sincronizando. Datos guardados localmente.', 'warning');
