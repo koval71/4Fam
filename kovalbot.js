@@ -3,12 +3,14 @@
 // Function to get calendar context for the chatbot
 function getCalendarContext() {
     try {
-        // Get current data from global variables (in memory) first, fallback to localStorage
-        const eventsData = (typeof events !== 'undefined' && events.length > 0) ? events : JSON.parse(localStorage.getItem('familyEvents') || '[]');
-        const plansData = (typeof plans !== 'undefined' && plans.length > 0) ? plans : JSON.parse(localStorage.getItem('familyPlans') || '[]');
-        const menuData = (typeof weeklyMenu !== 'undefined' && Object.keys(weeklyMenu).length > 0) ? weeklyMenu : JSON.parse(localStorage.getItem('weeklyMenu') || '{}');
-        const challengesData = (typeof challenges !== 'undefined' && challenges.length > 0) ? challenges : JSON.parse(localStorage.getItem('familyChallenges') || '[]');
-        const inventoryData = (typeof inventory !== 'undefined' && inventory.length > 0) ? inventory : JSON.parse(localStorage.getItem('homeInventory') || '[]');
+        // Always use localStorage as primary source (most reliable and up-to-date)
+        const eventsData = JSON.parse(localStorage.getItem('familyEvents') || '[]');
+        const plansData = JSON.parse(localStorage.getItem('familyPlans') || '[]');
+        const menuData = JSON.parse(localStorage.getItem('weeklyMenu') || '{}');
+        const challengesData = JSON.parse(localStorage.getItem('familyChallenges') || '[]');
+        const inventoryData = JSON.parse(localStorage.getItem('homeInventory') || '[]');
+        const completedChallengesData = JSON.parse(localStorage.getItem('completedChallenges') || '[]');
+        const familyScoreData = parseInt(localStorage.getItem('familyScore') || '0');
         
         // Add current date info
         const today = new Date();
@@ -73,11 +75,37 @@ function getCalendarContext() {
             context += "\n";
         }
         
+        // Add completed challenges and family score
+        if (completedChallengesData.length > 0) {
+            context += "RETOS COMPLETADOS RECIENTEMENTE:\n";
+            completedChallengesData.slice(-3).forEach(challenge => {
+                context += `- ${challenge.title} (Completado por: ${challenge.assignedTo})\n`;
+            });
+            context += "\n";
+        }
+        
+        if (familyScoreData > 0) {
+            context += `PUNTUACIÓN FAMILIAR ACTUAL: ${familyScoreData} puntos\n\n`;
+        }
+        
         return context || "No hay información específica del calendario disponible en este momento.";
     } catch (error) {
         console.error('Error getting calendar context:', error);
         return "Error al acceder a la información del calendario.";
     }
+}
+
+// Debug function to see what data KovalBot has access to
+function debugKovalBotData() {
+    console.log('=== KOVALBOT DATA DEBUG ===');
+    console.log('Events:', JSON.parse(localStorage.getItem('familyEvents') || '[]'));
+    console.log('Plans:', JSON.parse(localStorage.getItem('familyPlans') || '[]'));
+    console.log('Menu:', JSON.parse(localStorage.getItem('weeklyMenu') || '{}'));
+    console.log('Challenges:', JSON.parse(localStorage.getItem('familyChallenges') || '[]'));
+    console.log('Inventory:', JSON.parse(localStorage.getItem('homeInventory') || '[]'));
+    console.log('Completed Challenges:', JSON.parse(localStorage.getItem('completedChallenges') || '[]'));
+    console.log('Family Score:', localStorage.getItem('familyScore') || '0');
+    console.log('=== END DEBUG ===');
 }
 
 async function sendChatbotMessage() {
@@ -95,8 +123,12 @@ async function sendChatbotMessage() {
     messages.scrollTop = messages.scrollHeight;
     
     try {
+        // Debug: Show what data KovalBot can see
+        debugKovalBotData();
+        
         // Include calendar context with the message
         const calendarContext = getCalendarContext();
+        console.log('KovalBot Context:', calendarContext);
         const messageWithContext = `Eres KovalBot, asistente del calendario familiar.
 
 ${calendarContext}
@@ -105,14 +137,16 @@ Instrucciones para respuestas:
 - SIEMPRE usa la información exacta del contexto proporcionado arriba, especialmente la FECHA ACTUAL
 - Si preguntan sobre inventario, consulta la sección "INVENTARIO ACTUAL" y da la cantidad exacta
 - Si preguntan sobre eventos, consulta "PRÓXIMOS EVENTOS" y menciona fecha, hora y responsable
-- Si preguntan sobre planes, consulta "PLANES FAMILIARES" con prioridad y descripción
+- Si preguntan sobre planes o ideas familiares, consulta "PLANES FAMILIARES" con prioridad y descripción
 - Si preguntan qué día es hoy, usa la fecha de la sección "FECHA ACTUAL"
 - Si preguntan sobre cantidad de algo específico en inventario, busca el item exacto y di la cantidad
+- Si preguntan sobre el menú semanal, consulta "MENÚ SEMANAL" con platos y tiempos
+- Si preguntan sobre retos o mini-retos, consulta "MINI-RETOS ACTIVOS" y "RETOS COMPLETADOS RECIENTEMENTE"
+- Si preguntan sobre puntuación familiar, consulta "PUNTUACIÓN FAMILIAR ACTUAL"
 - Si no encuentras algo en el contexto, di claramente "No veo esa información en los datos actuales"
 - Sé específico y usa los datos exactos del contexto
 - Responde en español de manera amigable y útil
-- Si preguntan sobre el menú, consulta "MENÚ SEMANAL"
-- Si preguntan sobre retos, consulta "MINI-RETOS ACTIVOS"
+- Puedes sugerir ideas basadas en los datos disponibles
 
 Pregunta del usuario: ${userMessage}`;
         
