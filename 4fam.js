@@ -1704,63 +1704,29 @@ function debugChallenges() {
     console.log('========================');
 }
 
-// Add debug button in development
-if (window.location.hostname === 'localhost' || window.location.protocol === 'file:') {
-    setTimeout(() => {
-        if (document.getElementById('familyScore')) {
-            const debugBtn = document.createElement('button');
-            debugBtn.textContent = '🐛 Debug';
-            debugBtn.onclick = debugChallenges;
-            debugBtn.style.cssText = 'position:fixed;top:10px;left:10px;z-index:9999;padding:5px;background:#333;color:white;border:none;border-radius:4px;font-size:12px;';
-            document.body.appendChild(debugBtn);
-        }
-    }, 1000);
+// Debugging function for inventory
+function debugInventory() {
+    console.log('🔍 DEBUG - Estado del inventario:');
+    console.log('📋 Longitud:', inventory.length);
+    console.log('📋 Contenido completo:', inventory);
+    
+    inventory.forEach((item, index) => {
+        console.log(`📋 Índice ${index}: ${item.name} - Cantidad: ${item.qty} - Fecha: ${item.dateAdded}`);
+    });
+    
+    // También verificar localStorage para comparar
+    const localInventory = JSON.parse(localStorage.getItem('homeInventory') || '[]');
+    console.log('💾 Inventario en localStorage:', localInventory);
+    
+    return {
+        memoryInventory: inventory,
+        localInventory: localInventory,
+        match: JSON.stringify(inventory) === JSON.stringify(localInventory)
+    };
 }
 
-// Utility notification function
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification-popup ${type}`;
-    notification.textContent = message;
-    
-    // Style the notification
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        font-weight: bold;
-        max-width: 300px;
-        word-wrap: break-word;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    `;
-    
-    // Add to document
-    document.body.appendChild(notification);
-    
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}
+// Función para llamar desde la consola del navegador
+window.debugInventory = debugInventory;
 
 // Storage functions - Now using JSONBin
 async function saveCurrentChallenge() {
@@ -1992,6 +1958,9 @@ async function handleInventorySubmit(e) {
     const itemName = document.getElementById('itemName').value.trim();
     const itemQty = parseInt(document.getElementById('itemQty').value);
     
+    console.log('📝 Agregando/actualizando artículo:', itemName, 'Cantidad:', itemQty);
+    console.log('📋 Estado actual del inventario antes de agregar:', inventory);
+    
     if (!itemName || itemQty < 1) {
         showNotification('Por favor ingresa un nombre válido y cantidad', 'error');
         return;
@@ -2004,6 +1973,7 @@ async function handleInventorySubmit(e) {
     
     if (existingItemIndex !== -1) {
         // Update existing item
+        console.log('📋 Actualizando artículo existente en índice:', existingItemIndex);
         inventory[existingItemIndex].qty += itemQty;
         inventory[existingItemIndex].dateAdded = new Date().toISOString();
         showNotification(`${itemName} actualizado (+${itemQty})`, 'success');
@@ -2015,9 +1985,12 @@ async function handleInventorySubmit(e) {
             qty: itemQty,
             dateAdded: new Date().toISOString()
         };
+        console.log('📋 Agregando nuevo artículo:', newItem);
         inventory.push(newItem);
         showNotification(`${itemName} agregado al inventario`, 'success');
     }
+    
+    console.log('📋 Estado del inventario después de agregar:', inventory);
     
     await saveInventory();
     renderInventory();
@@ -2042,16 +2015,24 @@ function renderInventory() {
         return;
     }
     
-    // Sort by name
-    const sortedInventory = [...inventory].sort((a, b) => a.name.localeCompare(b.name));
+    console.log('📋 Renderizando inventario con', inventory.length, 'artículos:', inventory);
     
-    sortedInventory.forEach((item, index) => {
-        const itemCard = createInventoryItemCard(item, index);
+    // Sort by name but keep track of original indices
+    const sortedInventory = inventory.map((item, originalIndex) => ({ ...item, originalIndex }))
+                                   .sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('📋 Inventario ordenado con índices originales:', sortedInventory);
+    
+    sortedInventory.forEach((item, sortedIndex) => {
+        console.log(`📋 Creando tarjeta para '${item.name}' - Índice ordenado: ${sortedIndex}, Índice original: ${item.originalIndex}`);
+        const itemCard = createInventoryItemCard(item, item.originalIndex);
         inventoryList.appendChild(itemCard);
     });
 }
 
 function createInventoryItemCard(item, index) {
+    console.log(`🏷️ Creando tarjeta para '${item.name}' con índice ${index}`);
+    
     const card = document.createElement('div');
     card.className = 'item-card';
     
@@ -2079,44 +2060,124 @@ function createInventoryItemCard(item, index) {
         </div>
         <div class="item-date">Actualizado: ${formattedDate}</div>
         <button class="remove-btn" onclick="removeInventoryItem(${index})">Eliminar</button>
+        <small style="color: #999; display: block; margin-top: 5px;">Índice: ${index}</small>
     `;
     
     return card;
 }
 
 async function incrementItemQty(index) {
-    if (inventory[index]) {
-        inventory[index].qty += 1;
-        inventory[index].dateAdded = new Date().toISOString();
+    console.log('➕ Incrementando artículo en índice:', index);
+    console.log('📋 Estado actual del inventario:', inventory);
+    console.log('📋 Longitud del inventario:', inventory.length);
+    
+    if (index < 0 || index >= inventory.length) {
+        console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
+        showNotification('Error: Índice de artículo inválido', 'error');
+        return;
+    }
+    
+    if (!inventory[index]) {
+        console.error('❌ Artículo no encontrado en índice:', index);
+        showNotification('Error: Artículo no encontrado', 'error');
+        return;
+    }
+    
+    const itemName = inventory[index].name;
+    console.log('➕ Incrementando:', itemName, 'de cantidad', inventory[index].qty, 'a', inventory[index].qty + 1);
+    
+    inventory[index].qty += 1;
+    inventory[index].dateAdded = new Date().toISOString();
+    
+    try {
         await saveInventory();
         renderInventory();
-        showNotification(`${inventory[index].name} incrementado`, 'info');
+        showNotification(`${itemName} incrementado a ${inventory[index].qty}`, 'info');
+        console.log('✅ Incremento exitoso para:', itemName);
+    } catch (error) {
+        console.error('❌ Error guardando inventario después del incremento:', error);
+        showNotification('Error guardando cambios', 'error');
     }
 }
 
 async function decrementItemQty(index) {
-    if (inventory[index] && inventory[index].qty > 0) {
-        inventory[index].qty -= 1;
-        inventory[index].dateAdded = new Date().toISOString();
+    console.log('➖ Decrementando artículo en índice:', index);
+    console.log('📋 Estado actual del inventario:', inventory);
+    console.log('📋 Longitud del inventario:', inventory.length);
+    
+    if (index < 0 || index >= inventory.length) {
+        console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
+        showNotification('Error: Índice de artículo inválido', 'error');
+        return;
+    }
+    
+    if (!inventory[index]) {
+        console.error('❌ Artículo no encontrado en índice:', index);
+        showNotification('Error: Artículo no encontrado', 'error');
+        return;
+    }
+    
+    const itemName = inventory[index].name;
+    const currentQty = inventory[index].qty;
+    
+    if (currentQty === 0) {
+        console.log('⚠️ Artículo ya está agotado:', itemName);
+        showNotification(`${itemName} ya está agotado`, 'info');
+        return;
+    }
+    
+    console.log('➖ Decrementando:', itemName, 'de cantidad', currentQty, 'a', currentQty - 1);
+    
+    inventory[index].qty -= 1;
+    inventory[index].dateAdded = new Date().toISOString();
+    
+    try {
         await saveInventory();
         renderInventory();
         
         if (inventory[index].qty === 0) {
-            showNotification(`${inventory[index].name} agotado`, 'warning');
+            showNotification(`${itemName} agotado`, 'warning');
         } else {
-            showNotification(`${inventory[index].name} decrementado`, 'info');
+            showNotification(`${itemName} decrementado a ${inventory[index].qty}`, 'info');
         }
+        console.log('✅ Decremento exitoso para:', itemName);
+    } catch (error) {
+        console.error('❌ Error guardando inventario después del decremento:', error);
+        showNotification('Error guardando cambios', 'error');
     }
 }
 
 async function removeInventoryItem(index) {
-    if (inventory[index]) {
-        const itemName = inventory[index].name;
-        if (confirm(`¿Estás seguro de que quieres eliminar "${itemName}" del inventario?`)) {
-            inventory.splice(index, 1);
+    console.log('🗑️ Eliminando artículo en índice:', index);
+    console.log('📋 Estado actual del inventario:', inventory);
+    console.log('📋 Longitud del inventario:', inventory.length);
+    
+    if (index < 0 || index >= inventory.length) {
+        console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
+        showNotification('Error: Índice de artículo inválido', 'error');
+        return;
+    }
+    
+    if (!inventory[index]) {
+        console.error('❌ Artículo no encontrado en índice:', index);
+        showNotification('Error: Artículo no encontrado', 'error');
+        return;
+    }
+    
+    const itemName = inventory[index].name;
+    console.log('🗑️ Confirmando eliminación de:', itemName);
+    
+    if (confirm(`¿Estás seguro de que quieres eliminar "${itemName}" del inventario?`)) {
+        inventory.splice(index, 1);
+        
+        try {
             await saveInventory();
             renderInventory();
             showNotification(`${itemName} eliminado del inventario`, 'success');
+            console.log('✅ Eliminación exitosa de:', itemName);
+        } catch (error) {
+            console.error('❌ Error guardando inventario después de la eliminación:', error);
+            showNotification('Error guardando cambios', 'error');
         }
     }
 }

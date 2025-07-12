@@ -489,6 +489,7 @@ async function sendChatbotMessage() {
             
             <strong>🔧 Comandos especiales:</strong><br>
             <strong>/debug</strong> - Datos que puedo ver de tu app<br>
+            <strong>/testinventario</strong> - Diagnosticar problemas del inventario<br>
             <strong>/sync</strong> - Sincronizar desde la nube<br>
             <strong>/clear</strong> - Limpiar y resincronizar datos<br>
             <strong>/backup</strong> - Ver backup de emergencia<br>
@@ -673,6 +674,43 @@ async function sendChatbotMessage() {
         return;
     }
     
+    // Special inventory test command
+    if (userMessage.toLowerCase() === '/testinventario') {
+        const inventoryGlobal = window.inventory || [];
+        const inventoryLocal = JSON.parse(localStorage.getItem('homeInventory') || '[]');
+        const inventoryBackup = JSON.parse(localStorage.getItem('emergencyBackup') || '{}').homeInventory || [];
+        
+        messages.innerHTML += `<div><b>Tú:</b> ${userMessage}</div>`;
+        messages.innerHTML += `<div><b>🧪 Test Inventario:</b><br>
+            📊 <strong>Estado del Inventario:</strong><br>
+            - Variable global: ${inventoryGlobal.length} items<br>
+            - localStorage (homeInventory): ${inventoryLocal.length} items<br>
+            - Backup: ${inventoryBackup.length} items<br><br>
+            
+            🔍 <strong>Primeros 3 elementos (Variable global):</strong><br>
+            ${inventoryGlobal.slice(0, 3).map((item, idx) => 
+                `Índice ${idx}: ${item.name} (Qty: ${item.qty})`
+            ).join('<br>')}<br><br>
+            
+            🔍 <strong>Primeros 3 elementos (localStorage):</strong><br>
+            ${inventoryLocal.slice(0, 3).map((item, idx) => 
+                `Índice ${idx}: ${item.name} (Qty: ${item.qty})`
+            ).join('<br>')}<br><br>
+            
+            🎯 <strong>Test de Índices:</strong><br>
+            • Si los elementos se muestran ordenados alfabéticamente, pero los índices no coinciden con el orden original, ¡ahí está el problema!<br>
+            • Los botones +/- deben usar el índice ORIGINAL, no el índice de la lista ordenada.<br><br>
+            
+            💻 <strong>Para pruebas manuales:</strong><br>
+            1. Abre la consola (F12)<br>
+            2. Ejecuta: <code>debugInventory()</code><br>
+            3. Verifica que los índices coincidan con las acciones
+        </div>`;
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+        return;
+    }
+
     messages.innerHTML += `<div><b>Tú:</b> ${userMessage}</div>`;
     input.value = '';
     messages.scrollTop = messages.scrollHeight;
