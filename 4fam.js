@@ -2008,9 +2008,15 @@ function renderInventory() {
         return;
     }
     
-    // Sort by name but keep track of original indices
+    // Sort: First by quantity (0 quantity items go to bottom), then by name alphabetically
     const sortedInventory = inventory.map((item, originalIndex) => ({ ...item, originalIndex }))
-                                   .sort((a, b) => a.name.localeCompare(b.name));
+                                   .sort((a, b) => {
+                                       // If one item has 0 quantity and the other doesn't, put 0 quantity at bottom
+                                       if (a.qty === 0 && b.qty > 0) return 1;
+                                       if (a.qty > 0 && b.qty === 0) return -1;
+                                       // If both have same quantity status, sort alphabetically by name
+                                       return a.name.localeCompare(b.name);
+                                   });
     
     sortedInventory.forEach((item, sortedIndex) => {
         const itemCard = createInventoryItemCard(item, item.originalIndex);
