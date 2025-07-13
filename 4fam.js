@@ -1958,9 +1958,6 @@ async function handleInventorySubmit(e) {
     const itemName = document.getElementById('itemName').value.trim();
     const itemQty = parseInt(document.getElementById('itemQty').value);
     
-    console.log('📝 Agregando/actualizando artículo:', itemName, 'Cantidad:', itemQty);
-    console.log('📋 Estado actual del inventario antes de agregar:', inventory);
-    
     if (!itemName || itemQty < 1) {
         showNotification('Por favor ingresa un nombre válido y cantidad', 'error');
         return;
@@ -1973,7 +1970,6 @@ async function handleInventorySubmit(e) {
     
     if (existingItemIndex !== -1) {
         // Update existing item
-        console.log('📋 Actualizando artículo existente en índice:', existingItemIndex);
         inventory[existingItemIndex].qty += itemQty;
         inventory[existingItemIndex].dateAdded = new Date().toISOString();
         showNotification(`${itemName} actualizado (+${itemQty})`, 'success');
@@ -1985,12 +1981,9 @@ async function handleInventorySubmit(e) {
             qty: itemQty,
             dateAdded: new Date().toISOString()
         };
-        console.log('📋 Agregando nuevo artículo:', newItem);
         inventory.push(newItem);
         showNotification(`${itemName} agregado al inventario`, 'success');
     }
-    
-    console.log('📋 Estado del inventario después de agregar:', inventory);
     
     await saveInventory();
     renderInventory();
@@ -2015,24 +2008,17 @@ function renderInventory() {
         return;
     }
     
-    console.log('📋 Renderizando inventario con', inventory.length, 'artículos:', inventory);
-    
     // Sort by name but keep track of original indices
     const sortedInventory = inventory.map((item, originalIndex) => ({ ...item, originalIndex }))
                                    .sort((a, b) => a.name.localeCompare(b.name));
     
-    console.log('📋 Inventario ordenado con índices originales:', sortedInventory);
-    
     sortedInventory.forEach((item, sortedIndex) => {
-        console.log(`📋 Creando tarjeta para '${item.name}' - Índice ordenado: ${sortedIndex}, Índice original: ${item.originalIndex}`);
         const itemCard = createInventoryItemCard(item, item.originalIndex);
         inventoryList.appendChild(itemCard);
     });
 }
 
 function createInventoryItemCard(item, index) {
-    console.log(`🏷️ Creando tarjeta para '${item.name}' con índice ${index}`);
-    
     const card = document.createElement('div');
     card.className = 'item-card';
     
@@ -2060,17 +2046,12 @@ function createInventoryItemCard(item, index) {
         </div>
         <div class="item-date">Actualizado: ${formattedDate}</div>
         <button class="remove-btn" onclick="removeInventoryItem(${index})">Eliminar</button>
-        <small style="color: #999; display: block; margin-top: 5px;">Índice: ${index}</small>
     `;
     
     return card;
 }
 
 async function incrementItemQty(index) {
-    console.log('➕ Incrementando artículo en índice:', index);
-    console.log('📋 Estado actual del inventario:', inventory);
-    console.log('📋 Longitud del inventario:', inventory.length);
-    
     if (index < 0 || index >= inventory.length) {
         console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
         showNotification('Error: Índice de artículo inválido', 'error');
@@ -2084,8 +2065,6 @@ async function incrementItemQty(index) {
     }
     
     const itemName = inventory[index].name;
-    console.log('➕ Incrementando:', itemName, 'de cantidad', inventory[index].qty, 'a', inventory[index].qty + 1);
-    
     inventory[index].qty += 1;
     inventory[index].dateAdded = new Date().toISOString();
     
@@ -2093,7 +2072,6 @@ async function incrementItemQty(index) {
         await saveInventory();
         renderInventory();
         showNotification(`${itemName} incrementado a ${inventory[index].qty}`, 'info');
-        console.log('✅ Incremento exitoso para:', itemName);
     } catch (error) {
         console.error('❌ Error guardando inventario después del incremento:', error);
         showNotification('Error guardando cambios', 'error');
@@ -2101,10 +2079,6 @@ async function incrementItemQty(index) {
 }
 
 async function decrementItemQty(index) {
-    console.log('➖ Decrementando artículo en índice:', index);
-    console.log('📋 Estado actual del inventario:', inventory);
-    console.log('📋 Longitud del inventario:', inventory.length);
-    
     if (index < 0 || index >= inventory.length) {
         console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
         showNotification('Error: Índice de artículo inválido', 'error');
@@ -2121,12 +2095,9 @@ async function decrementItemQty(index) {
     const currentQty = inventory[index].qty;
     
     if (currentQty === 0) {
-        console.log('⚠️ Artículo ya está agotado:', itemName);
         showNotification(`${itemName} ya está agotado`, 'info');
         return;
     }
-    
-    console.log('➖ Decrementando:', itemName, 'de cantidad', currentQty, 'a', currentQty - 1);
     
     inventory[index].qty -= 1;
     inventory[index].dateAdded = new Date().toISOString();
@@ -2140,7 +2111,6 @@ async function decrementItemQty(index) {
         } else {
             showNotification(`${itemName} decrementado a ${inventory[index].qty}`, 'info');
         }
-        console.log('✅ Decremento exitoso para:', itemName);
     } catch (error) {
         console.error('❌ Error guardando inventario después del decremento:', error);
         showNotification('Error guardando cambios', 'error');
@@ -2148,10 +2118,6 @@ async function decrementItemQty(index) {
 }
 
 async function removeInventoryItem(index) {
-    console.log('🗑️ Eliminando artículo en índice:', index);
-    console.log('📋 Estado actual del inventario:', inventory);
-    console.log('📋 Longitud del inventario:', inventory.length);
-    
     if (index < 0 || index >= inventory.length) {
         console.error('❌ Índice fuera de rango:', index, 'Rango válido: 0 -', inventory.length - 1);
         showNotification('Error: Índice de artículo inválido', 'error');
@@ -2165,7 +2131,6 @@ async function removeInventoryItem(index) {
     }
     
     const itemName = inventory[index].name;
-    console.log('🗑️ Confirmando eliminación de:', itemName);
     
     if (confirm(`¿Estás seguro de que quieres eliminar "${itemName}" del inventario?`)) {
         inventory.splice(index, 1);
@@ -2174,7 +2139,6 @@ async function removeInventoryItem(index) {
             await saveInventory();
             renderInventory();
             showNotification(`${itemName} eliminado del inventario`, 'success');
-            console.log('✅ Eliminación exitosa de:', itemName);
         } catch (error) {
             console.error('❌ Error guardando inventario después de la eliminación:', error);
             showNotification('Error guardando cambios', 'error');
