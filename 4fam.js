@@ -309,11 +309,7 @@ function setupEventListeners() {
         planForm.addEventListener('submit', handlePlanSubmit);
     }
     
-    // Inventory form (Inventario page)
-    const inventoryForm = document.getElementById('inventoryForm');
-    if (inventoryForm) {
-        inventoryForm.addEventListener('submit', handleInventorySubmit);
-    }
+    // Note: Inventory form event listener is set up in inventario.html's setupInventoryEventListeners()
     
     // Custom challenge form (Retos page)
     const customChallengeForm = document.getElementById('customChallengeForm');
@@ -1954,14 +1950,20 @@ async function restoreDefaultChallenges() {
 
 async function handleInventorySubmit(e) {
     e.preventDefault();
+    console.log('📝 handleInventorySubmit called');
     
     const itemName = document.getElementById('itemName').value.trim();
     const itemQty = parseInt(document.getElementById('itemQty').value);
     
+    console.log('📝 Item name:', itemName, 'Quantity:', itemQty);
+    
     if (!itemName || itemQty < 1) {
+        console.log('❌ Validation failed');
         showNotification('Por favor ingresa un nombre válido y cantidad', 'error');
         return;
     }
+    
+    console.log('✅ Validation passed, adding to inventory...');
     
     // Check if item already exists
     const existingItemIndex = inventory.findIndex(item => 
@@ -1973,6 +1975,7 @@ async function handleInventorySubmit(e) {
         inventory[existingItemIndex].qty += itemQty;
         inventory[existingItemIndex].dateAdded = new Date().toISOString();
         showNotification(`${itemName} actualizado (+${itemQty})`, 'success');
+        console.log('✅ Updated existing item');
     } else {
         // Add new item
         const newItem = {
@@ -1983,14 +1986,18 @@ async function handleInventorySubmit(e) {
         };
         inventory.push(newItem);
         showNotification(`${itemName} agregado al inventario`, 'success');
+        console.log('✅ Added new item:', newItem);
     }
     
+    console.log('💾 Saving inventory...');
     await saveInventory();
+    console.log('🎨 Rendering inventory...');
     renderInventory();
     
     // Reset form
     document.getElementById('inventoryForm').reset();
     document.getElementById('itemQty').value = 1;
+    console.log('✅ Form reset');
 }
 
 async function saveInventory() {
@@ -2246,3 +2253,73 @@ function createAutoBackup() {
 // Initialize silent auto-backup
 setInterval(createAutoBackup, 60000 * 60); // Check every hour
 createAutoBackup(); // Run once on startup
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Style the notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    // Set background color based on type
+    switch(type) {
+        case 'success':
+            notification.style.backgroundColor = '#4caf50';
+            break;
+        case 'error':
+            notification.style.backgroundColor = '#f44336';
+            break;
+        case 'warning':
+            notification.style.backgroundColor = '#ff9800';
+            break;
+        case 'info':
+        default:
+            notification.style.backgroundColor = '#2196f3';
+            break;
+    }
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in forwards';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Add CSS for notification animations
+if (!document.getElementById('notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
